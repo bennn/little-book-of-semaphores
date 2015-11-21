@@ -5,6 +5,7 @@
   define-thread
   run
   thread*
+  random-sleep
 )
 
 ;; -----------------------------------------------------------------------------
@@ -15,6 +16,9 @@
 ;; =============================================================================
 
 (define thread* (box '()))
+
+(define (random-sleep)
+  (sleep 0.1))
 
 (define-syntax define-event
   (syntax-parser
@@ -30,7 +34,7 @@
   (syntax-parser
    [(_ name:id e*:expr ...)
     #'(begin
-        (define name (lambda () (begin e* ...)))
+        (define name (lambda () (begin (begin e* (random-sleep)) ...)))
         (set-box! thread* (cons name (unbox thread*))))]
    [stx
     (raise-user-error 'define-thread (format "Expected (define-thread id expr* ...), got '~a'" (syntax->datum #'stx)))]))

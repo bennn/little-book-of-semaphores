@@ -26,5 +26,4 @@
   (semaphore-wait a1-done?)
   (b2))
 
-(module+ main
-  (run))
+(module+ main (run))
