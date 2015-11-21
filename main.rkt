@@ -17,10 +17,12 @@
   ;;  each EXPR* in sequence when run.
 
   run
+  ;; (run)
   ;; Runs all threads scheduled with `define-thread`
 
-  thread*
-  random-sleep
+  thread* random-sleep
+  ;; Don't use these values!
+  ;; They are used internally by macros here
 )
 
 ;; -----------------------------------------------------------------------------
