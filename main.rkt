@@ -1,9 +1,24 @@
 #lang racket/base
 
+;; Bindings to express & solve semaphore problems
+
+;; TODO
+;; - this would be a great #lang
+;; - express constraints, random testing
+
 (provide
   define-event define-event*
+  ;; (define-event X)
+  ;; Declares a callable event X. For use in later threads
+
   define-thread
+  ;; (define-thread ID EXPR* ...)
+  ;; Declares, but does not run, a thread named ID that should execute
+  ;;  each EXPR* in sequence when run.
+
   run
+  ;; Runs all threads scheduled with `define-thread`
+
   thread*
   random-sleep
 )

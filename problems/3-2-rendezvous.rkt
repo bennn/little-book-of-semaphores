@@ -1,6 +1,5 @@
 #lang racket/base
-
-(require "main.rkt")
+(require little-book-of-semaphores)
 
 ;; Section 3.2, rendezvous
 
