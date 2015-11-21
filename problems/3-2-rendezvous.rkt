@@ -15,14 +15,14 @@
 
 (define-thread A
   (a1)
-  (semaphore-post a1-done?)
-  (semaphore-wait b1-done?)
+  (signal a1-done?)
+  (wait b1-done?)
   (a2))
 
 (define-thread B
   (b1)
-  (semaphore-post b1-done?)
-  (semaphore-wait a1-done?)
+  (signal b1-done?)
+  (wait a1-done?)
   (b2))
 
 (module+ main (run))

@@ -6,14 +6,14 @@
 (define mutex (make-semaphore 1))
 
 (define-thread A
-  (semaphore-wait mutex)
+  (wait mutex)
   (set! count (+ count 1))
-  (semaphore-post mutex))
+  (signal mutex))
 
 (define-thread B
-  (semaphore-wait mutex)
+  (wait mutex)
   (set! count (+ count 1))
-  (semaphore-post mutex))
+  (signal mutex))
 
 (module+ main
   (run)

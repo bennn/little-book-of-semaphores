@@ -20,9 +20,16 @@
   ;; (run)
   ;; Runs all threads scheduled with `define-thread`
 
+  (rename-out
+    ;; 'Convenient' syntax
+    [semaphore-wait wait]
+    [semaphore-wait P]
+    [semaphore-post signal]
+    [semaphore-post V])
+
+  ;; --- Don't use these values!
+  ;;     They are used internally by macros here
   thread* random-sleep
-  ;; Don't use these values!
-  ;; They are used internally by macros here
 )
 
 ;; -----------------------------------------------------------------------------
