@@ -69,4 +69,5 @@ For a little more explanation:
 - `signal` and `wait` are alternatives to `semaphore-post` and `semaphore-wait`
 
 My solutions are in the `problems/` folder.
+This library will change if it's not enough to clearly express later solutions.
 
