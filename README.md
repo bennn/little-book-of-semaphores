@@ -30,7 +30,36 @@ Start files with:
 
 ```
 
-This imports the file `main.rkt` and installs convenient syntax:
+Then you can do things like:
+
+```
+;; Goal:
+;; - run (a1 a2) and (b1 b2) in separate threads
+;; - a1 happens before b2
+;; - b1 happens before a2
+
+(define-event* a1 a2 b1 b2)
+
+(define a1-done? (make-semaphore 0))
+(define b1-done? (make-semaphore 0))
+
+(define-thread A
+  (a1)
+  (signal a1-done?)
+  (wait b1-done?)
+  (a2))
+
+(define-thread B
+  (b1)
+  (signal b1-done?)
+  (wait a1-done?)
+  (b2))
+
+(module+ main (run))
+```
+
+
+For a little more explanation:
 
 - `(define-event A)` or `(define-event* A ...)` creates a thunk named `A`.
   Threads can call the thunk to pretend they've done something.
@@ -40,5 +69,4 @@ This imports the file `main.rkt` and installs convenient syntax:
 - `signal` and `wait` are alternatives to `semaphore-post` and `semaphore-wait`
 
 My solutions are in the `problems/` folder.
-See those for examples.
 
