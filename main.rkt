@@ -20,12 +20,8 @@
   ;; (run)
   ;; Runs all threads scheduled with `define-thread`
 
-  (rename-out
-    ;; 'Convenient' syntax
-    [semaphore-wait wait]
-    [semaphore-wait P]
-    [semaphore-post signal]
-    [semaphore-post V])
+  wait signal
+  ;; Semaphore operations, optionally take a natural number
 
   incr decr
   ;; Syntax for boxes
@@ -73,6 +69,14 @@
 
 ;; -----------------------------------------------------------------------------
 ;; -- Non-critical syntax
+
+(define (wait S [N 1])
+  (for ([_i (in-range N)])
+    (semaphore-wait S)))
+
+(define (signal S [N 1])
+  (for ([_i (in-range N)])
+    (semaphore-post S)))
 
 (define-syntax-rule (incr b)
   (set-box! b (add1 (unbox b))))
