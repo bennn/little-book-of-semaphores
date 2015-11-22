@@ -6,11 +6,15 @@
 (define *num-threads* (box 0))
 
 (define can-enter? (make-semaphore 0))
+(define mutex (make-semaphore 1))
 
 (define (rendezvous id)
   (printf "~a : rendezvous\n" id)
+  (wait mutex)
   (decr *num-threads*)
-  (if (zero? (unbox *num-threads*))
+  (define nt (unbox *num-threads*))
+  (signal mutex)
+  (if (zero? nt)
     (signal can-enter?)
     (wait can-enter?)))
 
