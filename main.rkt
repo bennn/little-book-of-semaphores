@@ -27,6 +27,9 @@
     [semaphore-post signal]
     [semaphore-post V])
 
+  incr decr
+  ;; Syntax for boxes
+
   ;; --- Don't use these values!
   ;;     They are used internally by macros here
   thread* random-sleep
@@ -61,9 +64,18 @@
         (define name (lambda () (begin (begin e* (random-sleep)) ...)))
         (set-box! thread* (cons name (unbox thread*))))]
    [stx
-    (raise-user-error 'define-thread (format "Expected (define-thread id expr* ...), got '~a'" (syntax->datum #'stx)))]))
+    (raise-user-error 'define-thread (format "Expected (define-thread id expr* ...), got '~a'" #'stx))]))
 
 (define-syntax run
   (syntax-parser
    [(_)
     #'(for-each thread-wait (map thread (unbox thread*)))]))
+
+;; -----------------------------------------------------------------------------
+;; -- Non-critical syntax
+
+(define-syntax-rule (incr b)
+  (set-box! b (add1 (unbox b))))
+
+(define-syntax-rule (decr b)
+  (set-box! b (sub1 (unbox b))))
