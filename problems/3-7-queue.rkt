@@ -1,6 +1,8 @@
 #lang racket/base
 (require little-book-of-semaphores)
 
+;; TODO when could the queue ever go positive?
+
 (define *num-leaders* (box 0))
 (define *num-followers* (box 0))
 (define mutex (make-semaphore 1))
