@@ -14,16 +14,16 @@
     (define/public (push)
       (define s (make-semaphore 0))
       (with mutex
-        (set-field! Q_in this (cons s (get-field Q_in this))))
+        (set! Q_in (cons s Q_in)))
       (wait s))
 
     (define/public (pop)
       (with mutex
-        (when (null? (get-field Q_out this))
-          (set-field! Q_out this (reverse (get-field Q_in this)))
-          (set-field! Q_in this '()))
-        (let ([s (car (get-field Q_out this))])
-          (set-field! Q_out this (cdr (get-field Q_out this)))
+        (when (null? Q_out)
+          (set! Q_out (reverse Q_in))
+          (set! Q_in '()))
+        (let ([s (car Q_out)])
+          (set! Q_out (cdr Q_out))
           (signal s))))))
 
 (module+ test
