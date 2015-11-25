@@ -23,6 +23,9 @@
   wait signal
   ;; Semaphore operations, optionally take a natural number
 
+  with
+  ;; Shorthand for acquiring & releasing a semaphore
+
   incr decr
   ;; Syntax for boxes
 
@@ -66,6 +69,9 @@
   (syntax-parser
    [(_)
     #'(for-each thread-wait (map thread (unbox thread*)))]))
+
+(define-syntax-rule (with s e* ...)
+  (begin (wait s) e* ... (signal s)))
 
 ;; -----------------------------------------------------------------------------
 ;; -- Non-critical syntax
