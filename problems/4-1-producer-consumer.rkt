@@ -23,8 +23,8 @@
     (define/public (push event)
       (with mutex
         (printf "Pushing ~a\n" event)
-        (set-field! B this (cons event B))
-        (signal size)))
+        (set-field! B this (cons event B)))
+      (signal size))
 
     (define/public (pop)
       (wait mutex)
