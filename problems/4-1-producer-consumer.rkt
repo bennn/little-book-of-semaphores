@@ -9,6 +9,7 @@
   (gensym 'event))
 
 (define (respond e)
+  (sleep 1)
   (printf "Handled ~a\n" e))
 
 (define buffer%
@@ -16,29 +17,25 @@
     (super-new)
     (field
       [B '()]
-      [size (box 0)]
-      [item-added (make-semaphore 0)]
+      [size (make-semaphore 0)]
       [mutex (make-semaphore 1)])
 
     (define/public (push event)
-      (wait mutex)
-      (printf "Pushing ~a\n" event)
-      (set-field! B this (cons event B))
-      (incr size)
-      (signal mutex)
-      (signal item-added))
+      (with mutex
+        (printf "Pushing ~a\n" event)
+        (set-field! B this (cons event B))
+        (signal size)))
 
     (define/public (pop)
       (wait mutex)
       (let loop ()
-        (when (zero? (unbox size))
+        (when (null? B)
           (signal mutex)
-          (wait item-added)
+          (wait size)
           (wait mutex)
           (loop)))
       (define v (car B))
       (set-field! B this (cdr B))
-      (decr size)
       (signal mutex)
       v)))
 
@@ -66,6 +63,6 @@
 ;; -----------------------------------------------------------------------------
 
 (module+ main
-  (make-consumer C1 C2)
+  (make-consumer C1)
   (make-producer P1 P2 P3 P4)
   (run))
