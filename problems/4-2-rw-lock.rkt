@@ -39,19 +39,13 @@
     (super-new)
     (field
       [num-readers (box 0)]
-      [waiting-writers (box 0)]
       [room-empty (make-semaphore 1)]
       [mutex (make-semaphore 1)]
-      [wutex (make-semaphore 1)])
+      [turnstile (make-semaphore 1)])
 
     (define/public (reader-enter)
-      (with wutex
-        (let loop ()
-          (unless (zero? (unbox waiting-writers))
-            (signal wutex)
-            (sleep 0.1) ;; sorry, but writer needs to broadcast
-            (wait wutex)
-            (loop))))
+      (wait turnstile)
+      (signal turnstile)
       (with mutex
         (when (zero? (unbox num-readers))
           (wait room-empty))
@@ -64,11 +58,9 @@
           (signal room-empty))))
 
     (define/public (writer-enter)
-      (with wutex
-        (incr waiting-writers))
+      (wait turnstile)
       (wait room-empty)
-      (with wutex
-        (decr waiting-writers)))
+      (signal turnstile))
 
     (define/public (writer-exit)
       (signal room-empty))))
