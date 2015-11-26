@@ -8,44 +8,26 @@
     (super-new)
     (field
       [num-readers (box 0)]
-      [num-writers (box 0)]
-      [writer-gone (make-semaphore 0)]
-      [readers-gone (make-semaphore 0)]
+      [room-empty (make-semaphore 1)]
       [mutex (make-semaphore 1)])
 
     (define/public (reader-enter)
-      (wait mutex)
-      (let loop ()
-        (unless (zero? (unbox num-writers))
-          (signal mutex)
-          (sleep 0.1) ;; nooo
-          (wait mutex)))
-      (incr num-readers)
-      (signal mutex))
+      (with mutex
+        (when (zero? (unbox num-readers))
+          (wait room-empty))
+        (incr num-readers)))
 
     (define/public (reader-exit)
-      (wait mutex)
-      (decr num-readers)
-      (define nr (unbox num-readers))
-      (signal mutex)
-      (when (zero? nr)
-        (signal readers-gone)))
+      (with mutex
+        (decr num-readers)
+        (when (zero? (unbox num-readers))
+          (signal room-empty))))
 
     (define/public (writer-enter)
-      (wait mutex)
-      (let loop ()
-        (unless (and (zero? (unbox num-readers))
-                     (zero? (unbox num-writers)))
-          (signal mutex)
-          (sleep 0.1) ;; nooo
-          (wait mutex)))
-      (incr num-writers)
-      (signal mutex))
+      (wait room-empty))
 
     (define/public (writer-exit)
-      (wait mutex)
-      (decr num-writers)
-      (signal mutex))))
+      (signal room-empty))))
 
 ;; -----------------------------------------------------------------------------
 
@@ -68,6 +50,9 @@
 
   (make-reader R1 R2 R3 R4)
   (make-writer W1 W2)
+  (make-reader R5 R6 R7)
+  (make-writer W3)
+  (make-reader R8 R9 R10 R11 R12)
 
   (run))
 
