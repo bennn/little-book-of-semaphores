@@ -1,6 +1,10 @@
 #lang racket/base
 (require little-book-of-semaphores)
 
+(provide rw-lock% wr-lock%)
+
+;; -----------------------------------------------------------------------------
+
 (require racket/class)
 
 (define rw-lock%
@@ -29,10 +33,50 @@
     (define/public (writer-exit)
       (signal room-empty))))
 
+;; Favors waiting writers
+(define wr-lock%
+  (class object%
+    (super-new)
+    (field
+      [num-readers (box 0)]
+      [waiting-writers (box 0)]
+      [room-empty (make-semaphore 1)]
+      [mutex (make-semaphore 1)]
+      [wutex (make-semaphore 1)])
+
+    (define/public (reader-enter)
+      (with wutex
+        (let loop ()
+          (unless (zero? (unbox waiting-writers))
+            (signal wutex)
+            (sleep 0.1) ;; sorry, but writer needs to broadcast
+            (wait wutex)
+            (loop))))
+      (with mutex
+        (when (zero? (unbox num-readers))
+          (wait room-empty))
+        (incr num-readers)))
+
+    (define/public (reader-exit)
+      (with mutex
+        (decr num-readers)
+        (when (zero? (unbox num-readers))
+          (signal room-empty))))
+
+    (define/public (writer-enter)
+      (with wutex
+        (incr waiting-writers))
+      (wait room-empty)
+      (with wutex
+        (decr waiting-writers)))
+
+    (define/public (writer-exit)
+      (signal room-empty))))
+
 ;; -----------------------------------------------------------------------------
 
 (module+ test
-  (define lock (new rw-lock%))
+  (define lock (new wr-lock%))
 
   (define-syntax-rule (make-reader id* ...)
     (begin
