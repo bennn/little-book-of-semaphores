@@ -1,5 +1,7 @@
 #lang little-book-of-semaphores
 
+(provide fifo%)
+
 (define fifo%
   (class object%
     (super-new)
@@ -19,9 +21,10 @@
         (when (null? Q_out)
           (set! Q_out (reverse Q_in))
           (set! Q_in '()))
-        (let ([s (car Q_out)])
-          (set! Q_out (cdr Q_out))
-          (signal s))))))
+        (unless (null? Q_out)
+          (let ([s (car Q_out)])
+            (set! Q_out (cdr Q_out))
+            (signal s)))))))
 
 (module+ test
   (define fifo (make-object fifo%))
