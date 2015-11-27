@@ -1,61 +1,87 @@
-#lang racket/base
-(require little-book-of-semaphores)
+#lang little-book-of-semaphores
 
-(provide rw-lock% wr-lock%)
+(provide
+  lightswitch%
+  ;; (new lightswitch% [switch (make-semaphore 1)])
+  ;; Methods:
+  ;; - wait
+  ;; - signal
+
+  (rename-out
+    [rw-lock% readers-dominate-writers%]
+    [Wr-lock% writers-dominate-readers%]
+    [wr-lock% readers-wait-for-writer%])
+  ;; Variations on the reader-writer lock.
+  ;; The names hint at the semantics:
+  ;; - readers-dominate : Writers wait for all readers to finish
+  ;; - readers-wait     : New readers wait for a queued writer to finish
+  ;; - writers-dominate : Readers give priority to writers & wait for all writers to finish
+  ;; Methods:
+  ;; - reader-enter
+  ;; - reader-exit
+  ;; - writer-enter
+  ;; - writer-exit
+)
 
 ;; -----------------------------------------------------------------------------
 
-(require racket/class)
+(define lightswitch%
+  (class object%
+    (super-new)
+    (init-field
+     switch) ;; Semaphore
+    (field
+     [members (box 0)]
+     [mutex (make-semaphore 1)])
 
+    (define/public (wait)
+      (with mutex
+        (when (zero? (unbox members))
+          (semaphore-wait (get-field switch this)))
+        (incr members)))
+
+    (define/public (signal)
+      (with mutex
+        (decr members)
+        (when (zero? (unbox members))
+          (semaphore-post (get-field switch this)))))))
+
+;; Readers dominate
 (define rw-lock%
   (class object%
     (super-new)
     (field
-      [num-readers (box 0)]
       [room-empty (make-semaphore 1)]
-      [mutex (make-semaphore 1)])
+      [light (new lightswitch% [switch room-empty])])
 
     (define/public (reader-enter)
-      (with mutex
-        (when (zero? (unbox num-readers))
-          (wait room-empty))
-        (incr num-readers)))
+      (send (get-field light this) wait))
 
     (define/public (reader-exit)
-      (with mutex
-        (decr num-readers)
-        (when (zero? (unbox num-readers))
-          (signal room-empty))))
+      (send (get-field light this) signal))
 
     (define/public (writer-enter)
-      (wait room-empty))
+      (wait (get-field room-empty this)))
 
     (define/public (writer-exit)
-      (signal room-empty))))
+      (signal (get-field room-empty this)))))
 
-;; Favors waiting writers
+;; Lets waiting writers go first
 (define wr-lock%
   (class object%
     (super-new)
     (field
-      [num-readers (box 0)]
       [room-empty (make-semaphore 1)]
-      [mutex (make-semaphore 1)]
+      [switch (new lightswitch% [switch room-empty])]
       [turnstile (make-semaphore 1)])
 
     (define/public (reader-enter)
       (wait turnstile)
       (signal turnstile)
-      (with mutex
-        (when (zero? (unbox num-readers))
-          (wait room-empty))
-        (incr num-readers)))
+      (send switch wait))
 
     (define/public (reader-exit)
-      (with mutex
-        (decr num-readers)
-        (when (zero? (unbox num-readers))
-          (signal room-empty))))
+      (send switch signal))
 
     (define/public (writer-enter)
       (wait turnstile)
@@ -65,10 +91,40 @@
     (define/public (writer-exit)
       (signal room-empty))))
 
+;; Writers dominate
+(define Wr-lock%
+  (class object%
+    (super-new)
+    (field
+      [no_readers (make-semaphore 1)]
+      [no_writers (make-semaphore 1)]
+      [mutex (make-semaphore 1)]
+      [r_switch (new lightswitch% [switch no_readers])]
+      [w_switch (new lightswitch% [switch no_writers])])
+
+    (define/public (reader-enter)
+      (wait no_writers)
+      (send r_switch wait)
+      (signal no_writers))
+
+    (define/public (reader-exit)
+      (send r_switch signal))
+
+    (define/public (writer-enter)
+      (send w_switch wait)
+      (wait mutex))
+
+    (define/public (writer-exit)
+      (signal mutex)
+      (send w_switch signal))))
+
 ;; -----------------------------------------------------------------------------
 
 (module+ test
-  (define lock (new wr-lock%))
+  (define lock
+    ;(new rw-lock%))
+    (new wr-lock%))
+    ;(new Wr-lock%))
 
   (define-syntax-rule (make-reader id* ...)
     (begin
