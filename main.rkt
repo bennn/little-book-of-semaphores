@@ -3,10 +3,12 @@
 ;; Bindings to express & solve semaphore problems
 
 ;; TODO
-;; - this would be a great #lang
 ;; - express constraints, random testing
 
 (provide
+  (all-from-out racket/base racket/class)
+  ;; Essentials
+
   define-event define-event*
   ;; (define-event X)
   ;; Declares a callable event X. For use in later threads
@@ -37,6 +39,7 @@
 ;; -----------------------------------------------------------------------------
 
 (require
+  racket/class
   (for-syntax racket/base syntax/parse))
 
 ;; =============================================================================

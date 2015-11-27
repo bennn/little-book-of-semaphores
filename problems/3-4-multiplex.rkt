@@ -1,5 +1,4 @@
-#lang racket/base
-(require little-book-of-semaphores)
+#lang little-book-of-semaphores
 
 (define CAPACITY 2)
 

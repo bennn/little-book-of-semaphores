@@ -1,7 +1,4 @@
-#lang racket/base
-(require little-book-of-semaphores)
-
-(require racket/class)
+#lang little-book-of-semaphores
 
 (define barrier%
   (class object%
