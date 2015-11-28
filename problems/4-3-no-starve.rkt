@@ -35,9 +35,61 @@
       (send Q pop))
 ))
 
+(define no-starve-mutex2%
+  (class object%
+    (super-new)
+    (field
+     [mutex (make-semaphore 1)]
+     [on-deck (make-semaphore 1)])
+
+    (define/public (wait)
+      (semaphore-wait on-deck)
+      (semaphore-wait mutex)
+      (semaphore-post on-deck))
+
+    (define/public (signal)
+      (semaphore-post mutex))))
+
+;; Dude, this shit doesn't seem better than mine... 
+(define no-starve-morris%
+  (class* object% (lock<%>)
+    (super-new)
+    (field
+     [room1 (box 0)]
+     [room2 (box 0)]
+     [mutex (make-semaphore 1)]
+     [t1 (make-semaphore 1)]
+     [t2 (make-semaphore 0)])
+
+    ;; #too-hard!
+    (define/public (wait)
+      (semaphore-wait mutex)
+      (incr room1)
+      (semaphore-post mutex)
+      (semaphore-wait t1)
+      (incr room2)
+      (semaphore-wait mutex)
+      (decr room1)
+      (if (zero? (unbox room1))
+        (begin
+          (semaphore-post mutex)
+          (semaphore-post t2))
+        (begin
+          (semaphore-post mutex)
+          (semaphore-post t1)))
+      (semaphore-post t2)
+      (decr room2))
+
+    (define/public (signal)
+      (if (zero? (unbox room2))
+        (semaphore-post t1)
+        (semaphore-post t2)))))
+
+;; -----------------------------------------------------------------------------
+
 ;; Threads running in an infinite loop should eventually all go
 (module+ test
-  (define M (new no-starve-mutex%))
+  (define M (new no-starve-morris%))
 
   (define-syntax-rule (make-thread id* ...)
     (begin
