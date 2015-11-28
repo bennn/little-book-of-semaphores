@@ -26,6 +26,10 @@
   ;; - signal
   ;;   aka unlock
 
+  (struct-out abstract-lock)
+  ;; Struct "interface" for locks
+  ;; Fields are 'wait' and 'signal'
+
   run
   ;; (run)
   ;; Runs all threads scheduled with `define-thread`
@@ -91,6 +95,11 @@
 
     wait
     ;; Lock
+))
+
+(struct abstract-lock (
+  signal ;; (-> Void)
+  wait   ;; (-> Void)
 ))
 
 ;; -----------------------------------------------------------------------------
