@@ -4,6 +4,8 @@
 ;;   (weak = number of threads woken before thread T wakes up is bounded)
 
 (provide
+  (rename-out [no-starve-mutex2% no-starve-mutex%])
+  no-starve-morris%
 )
 
 (require "3-8-fifo.rkt")
@@ -32,8 +34,7 @@
     (define/public (signal)
       (with mutex
         (set-box! free? #t))
-      (send Q pop))
-))
+      (send Q pop))))
 
 (define no-starve-mutex2%
   (class object%
