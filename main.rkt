@@ -18,6 +18,14 @@
   ;; Declares, but does not run, a thread named ID that should execute
   ;;  each EXPR* in sequence when run.
 
+  lock<%>
+  ;; Interface for locks:
+  ;; Methods:
+  ;; - wait
+  ;;   aka lock
+  ;; - signal
+  ;;   aka unlock
+
   run
   ;; (run)
   ;; Runs all threads scheduled with `define-thread`
@@ -75,6 +83,15 @@
 
 (define-syntax-rule (with s e* ...)
   (begin (wait s) e* ... (signal s)))
+
+(define lock<%>
+  (interface ()
+    signal
+    ;; Unlock
+
+    wait
+    ;; Lock
+))
 
 ;; -----------------------------------------------------------------------------
 ;; -- Non-critical syntax
