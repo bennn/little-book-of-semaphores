@@ -30,6 +30,11 @@
   ;; Struct "interface" for locks
   ;; Fields are 'wait' and 'signal'
 
+  repeat forever
+  ;; Syntax for making loops.
+  ;; `repeat n e* ...` does `e* ...` exactly `n` times.
+  ;; `forever e* ...` loops indefinitely
+
   run
   ;; (run)
   ;; Runs all threads scheduled with `define-thread`
@@ -79,6 +84,14 @@
         (set-box! thread* (cons name (unbox thread*))))]
    [stx
     (raise-user-error 'define-thread (format "Expected (define-thread id expr* ...), got '~a'" #'stx))]))
+
+(define-syntax-rule (repeat n e* ...)
+  (for ([__i (in-range n)])
+    (begin e* ...)))
+
+(define-syntax-rule (forever e* ...)
+  (let loop ()
+    (begin e* ... (loop))))
 
 (define-syntax run
   (syntax-parser
