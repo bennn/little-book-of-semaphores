@@ -5,6 +5,9 @@
 ;; - each smoker has one ingredient
 ;; - agent has all ingredients, makes 2 random ones available at a time
 
+;; This is the generalized solution:
+;;  agents keep making ingredients, without waiting for smokers to use them
+
 (require (for-syntax racket/base syntax/parse racket/syntax))
 
 ;; -----------------------------------------------------------------------------
