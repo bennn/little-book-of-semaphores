@@ -43,7 +43,8 @@
   ;; Semaphore operations, optionally take a natural number
 
   with
-  ;; Shorthand for acquiring & releasing a semaphore
+  ;; (with S e* ...)
+  ;; Shorthand for acquiring & releasing a semaphore `S`
 
   incr decr
   ;; Syntax for boxes
