@@ -100,7 +100,7 @@
     #'(for-each thread-wait (map thread (unbox thread*)))]))
 
 (define-syntax-rule (with s e* ...)
-  (begin (wait s) e* ... (signal s)))
+  (begin (wait s) (let ([r (begin e* ...)]) (signal s) r)))
 
 (define lock<%>
   (interface ()
