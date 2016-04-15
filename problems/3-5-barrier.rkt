@@ -1,5 +1,4 @@
 #lang little-book-of-semaphores
-(require (for-syntax syntax/parse racket/base racket/syntax))
 
 ;; Goal: all threads rendezvous, then do critical
 (define *num-threads* (box 0))

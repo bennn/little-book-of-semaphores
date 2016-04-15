@@ -7,6 +7,7 @@
 
 (provide
   (all-from-out racket/base racket/class)
+  (for-syntax (all-from-out racket/base syntax/parse racket/syntax))
   ;; Essentials
 
   define-event define-event*
@@ -58,7 +59,7 @@
 
 (require
   racket/class
-  (for-syntax racket/base syntax/parse))
+  (for-syntax racket/base syntax/parse racket/syntax))
 
 ;; =============================================================================
 

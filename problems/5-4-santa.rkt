@@ -2,12 +2,7 @@
 
 ;; Messy, but seems alright Like a real workshop?
 
-(require
-  racket/set
-  (for-syntax
-    racket/base
-    syntax/parse
-    racket/syntax))
+(require racket/set)
 
 (define NUM-REINDEER 9)
 (define-for-syntax NUM-REINDEER 9)

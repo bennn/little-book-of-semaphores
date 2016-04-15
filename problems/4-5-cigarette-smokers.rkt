@@ -8,8 +8,6 @@
 ;; This is the generalized solution:
 ;;  agents keep making ingredients, without waiting for smokers to use them
 
-(require (for-syntax racket/base syntax/parse racket/syntax))
-
 ;; -----------------------------------------------------------------------------
 ;; Agent
 

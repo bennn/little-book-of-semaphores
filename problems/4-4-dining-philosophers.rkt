@@ -1,7 +1,5 @@
 #lang little-book-of-semaphores
 
-(require (for-syntax racket/base syntax/parse racket/syntax))
-
 ;; Dining philosophers
 ;; - No sharing forks
 ;; - No deadlock

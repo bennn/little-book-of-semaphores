@@ -1,7 +1,5 @@
 #lang little-book-of-semaphores
 
-(require (for-syntax racket/base syntax/parse racket/syntax))
-
 (define bond-id (box 0))
 (struct molecule (
   id ;; Natural

@@ -1,5 +1,4 @@
 #lang little-book-of-semaphores
-(require (for-syntax racket/base syntax/parse racket/syntax))
 
 (define CAP 4)
 (define boat (box '()))
