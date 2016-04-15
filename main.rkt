@@ -49,7 +49,8 @@
 
   incr decr
   ;; Syntax for boxes
-
+)
+(provide
   ;; --- Don't use these values!
   ;;     They are used internally by macros here
   thread* random-sleep
