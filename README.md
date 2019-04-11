@@ -3,7 +3,7 @@ Little Book of Semaphores
 
 Racket support for implementing the [Little Book of Semaphores](http://www.greenteapress.com/semaphores).
 
-(Still under construction:
+Still under construction:
 
 - Add syntax for condition-var loops
 - Make sure files are consistent
