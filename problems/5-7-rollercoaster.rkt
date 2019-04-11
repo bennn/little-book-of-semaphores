@@ -1,35 +1,69 @@
 #lang little-book-of-semaphores
 
+;; TODO generalize to multiple cars
+;; - 1 car boards at a time
+;; - multiple cars run concurrently
+;; - cars must unload in order
+
 (define-for-syntax CAPACITY 5)
 
+;; TODO generalize these, but keep same passenger interface
 (define mutex (make-semaphore 1))
 (define num-board (box 0))
 
-(define all-aboard (make-semaphore 0))
-(define all-offboard (make-semaphore 0))
-
-(define can-board (make-semaphore 0))
-(define can-offboard (make-semaphore 0))
+;; TODO what should these be?
+(define can-board #f)
+(define all-aboard #f)
+(define can-offboard #f)
+(define all-offboard #f)
 
 ;; -----------------------------------------------------------------------------
 
-(define-syntax (define-car stx)
+(define load-mutex (make-semaphore 1))
+(define load-queue (box '()))
+
+(define-syntax-rule (loading id e* ...)
+  (with load-mutex
+    (set-box! load-queue (cons id (unbox load-queue)))
+    e* ...))
+
+(define (spinlock e #:wait m #:cond b)
+  (wait m)
+  (let loop ()
+    (if (b)
+      (begin (e) (signal m))
+      (begin (signal m) (sleep 1) (wait m) (loop)))))
+
+;; spinlock
+(define-syntax-rule (unloading id e* ...)
+  (spinlock
+    #:wait load-mutex
+    #:cond (lambda () (eq? id (car (unbox load-queue))))
+    (lambda () e* ...)))
+
+(define-syntax (define-cars stx)
   (syntax-parse stx
-   [(_)
+   [(_ NUM-CAR:nat)
+    #:with (car-id* ...)
+           (for/list ([i (in-range (syntax-e #'NUM-CAR))])
+             (format-id stx "car~a" i))
     (quasisyntax/loc stx
-      (define-thread car
+     (begin
+      (define-thread car-id*
         (forever
-          (printf "CAR is warming up...\n")
+          (printf "~a is warming up...\n" 'car-id*)
           (sleep 1)
-          (printf "CAR is ready to board\n")
-          (for ([i (in-range '#,CAPACITY)])
-            (signal can-board))
-          (wait all-aboard)
-          (printf "CAR is cruising\n")
+          (printf "~a is ready to board\n" 'car-id*)
+          (loading 'car-id*
+            (for ([i (in-range '#,CAPACITY)])
+              (signal can-board))
+            (wait all-aboard))
+          (printf "~a is cruising\n" 'car-id*)
           (sleep 1)
-          (for ([i (in-range '#,CAPACITY)])
-            (signal can-offboard))
-          (wait all-offboard))))]))
+          (unloading 'car-id*
+            (for ([i (in-range '#,CAPACITY)])
+              (signal can-offboard))
+            (wait all-offboard)))) ...))]))
 
 (define-syntax (define-passenger stx)
   (syntax-parse stx
@@ -66,6 +100,6 @@
 
 (module+ test
   (define-passengers 17)
-  (define-car)
+  (define-cars 4)
   (run)
 )
